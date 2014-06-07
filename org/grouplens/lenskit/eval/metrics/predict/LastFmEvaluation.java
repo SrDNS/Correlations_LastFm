@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 
 /**
@@ -46,6 +47,14 @@ public abstract class LastFmEvaluation extends AbstractTestUserMetric {
     static double avgA;
     static double avgB;
     static double avgC;
+    
+    static double corA;
+    static double corB;
+    static double corC;
+    static double sumPearsonA;
+    static double sumPearsonB;
+    static double sumPearsonC;
+    static int nusers;
 
 //    @Override
 //    public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
@@ -127,7 +136,11 @@ public abstract class LastFmEvaluation extends AbstractTestUserMetric {
 
             uniqueUsers = golden.size();
             System.out.println("To synolo twn monadikwn xristwn sto dataset einai: " + uniqueUsers);
-
+            
+            nusers = 0;
+            sumPearsonA = 0;
+            sumPearsonB = 0;
+            sumPearsonC = 0;
             for (Integer i : golden.keySet()) {
 
                 Double[] ADoubles = new Double[methodA.get(i).size()];
@@ -138,28 +151,40 @@ public abstract class LastFmEvaluation extends AbstractTestUserMetric {
                 methodC.get(i).toArray(CDoubles);
                 Double[] goldenDoubles = new Double[golden.get(i).size()];
                 golden.get(i).toArray(goldenDoubles);
-                
-                for (int arrayCounter = 0; arrayCounter < goldenDoubles.length; arrayCounter++) {
 
-                    sumA += ADoubles[arrayCounter];
-                    sumB += BDoubles[arrayCounter];
-                    sumC += CDoubles[arrayCounter];
-                    sumGolden += goldenDoubles[arrayCounter];
+                if (goldenDoubles.length > 1) {
+                    corA = p.correlation(ArrayUtils.toPrimitive(ADoubles), ArrayUtils.toPrimitive(goldenDoubles));
+                    corB = p.correlation(ArrayUtils.toPrimitive(BDoubles), ArrayUtils.toPrimitive(goldenDoubles));
+                    corC = p.correlation(ArrayUtils.toPrimitive(CDoubles), ArrayUtils.toPrimitive(goldenDoubles));
                     
+                    sumPearsonA += corA;
+                    sumPearsonB += corB;
+                    sumPearsonC += corC;
+                    nusers++;
+//                for (int arrayCounter = 0; arrayCounter < goldenDoubles.length; arrayCounter++) {
+//
+//                    sumA += ADoubles[arrayCounter];
+//                    sumB += BDoubles[arrayCounter];
+//                    sumC += CDoubles[arrayCounter];
+//                    sumGolden += goldenDoubles[arrayCounter];
+//                    
+//                }
+//
+//                avgA = sumA / ADoubles.length;
+//                avgB = sumB / BDoubles.length;
+//                avgC = sumC / CDoubles.length;
+//                avgGolden = sumGolden / goldenDoubles.length;
+
+                    System.out.println(sumPearsonA);
+                    System.out.println(sumPearsonB);
+                    System.out.println(sumPearsonC);
+                    System.out.println(nusers);
+                    System.out.println("----------------------------------");
+//                sumGolden = 0; sumA = 0; sumB = 0; sumC = 0;
+                } else {
+                    System.out.println("User has only ONE rating!!!!! ");
+                    System.out.println("----------------------------------");
                 }
-
-                avgA = sumA / ADoubles.length;
-                avgB = sumB / BDoubles.length;
-                avgC = sumC / CDoubles.length;
-                avgGolden = sumGolden / goldenDoubles.length;
-                
-                System.out.println(avgA);
-                System.out.println(avgB);
-                System.out.println(avgC);
-                System.out.println(avgGolden);
-                System.out.println("----------------------------------");
-                sumGolden = 0; sumA = 0; sumB = 0; sumC = 0;
-
             }
 
         } catch (FileNotFoundException e) {
