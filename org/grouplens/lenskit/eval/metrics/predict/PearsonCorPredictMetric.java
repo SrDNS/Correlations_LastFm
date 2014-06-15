@@ -19,6 +19,7 @@ import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
  * * Evaluate a recommender's prediction accuracy with RMSE. * * @author <a
  * href="http://www.grouplens.org">GroupLens Research</a>
  */
+
 public class PearsonCorPredictMetric extends AbstractTestUserMetric {
 
     private static final PearsonsCorrelation p = new PearsonsCorrelation();

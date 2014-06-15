@@ -6,25 +6,15 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
-import org.grouplens.lenskit.eval.traintest.TestUser;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
+import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 
 /**
  * * Evaluate a recommender's prediction accuracy with RMSE. * * @author <a
@@ -33,7 +23,8 @@ import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 public abstract class LastFmEvaluation extends AbstractTestUserMetric {
 
     private static final PearsonsCorrelation p = new PearsonsCorrelation();
-
+//    private static final SpearmansCorrelation p = new SpearmansCorrelation();
+    
     private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);
     private static final ImmutableList<String> COLUMNS = ImmutableList.of("PearsonCor.ByRating", "PearsonCor.ByUser");
     private static final ImmutableList<String> USER_COLUMNS = ImmutableList.of("PearsonCor");
@@ -47,7 +38,7 @@ public abstract class LastFmEvaluation extends AbstractTestUserMetric {
     static double avgA;
     static double avgB;
     static double avgC;
-    
+
     static double corA;
     static double corB;
     static double corC;
@@ -78,7 +69,8 @@ public abstract class LastFmEvaluation extends AbstractTestUserMetric {
 //    }
     public static void main(String[] args) {
 
-        String csvFile = "/home/user/Desktop/LastFM_exps/LastFM_1_of_5_20140606-0338.csv";
+        String csvFile = "/home/user/Desktop/LastFM_exps/newresultssets/LastFM_1_of_5_20140613-1938.csv";
+//        String csvFile = "/home/user/Desktop/LastFM_exps/reresultset1of5fold/LastFM_1_of_5_20140606-0338.csv";
         BufferedReader br = null;
         String sCurrentLine = "";
         String cvsSplitBy = ",";
@@ -136,7 +128,7 @@ public abstract class LastFmEvaluation extends AbstractTestUserMetric {
 
             uniqueUsers = golden.size();
             System.out.println("To synolo twn monadikwn xristwn sto dataset einai: " + uniqueUsers);
-            
+
             nusers = 0;
             sumPearsonA = 0;
             sumPearsonB = 0;
@@ -153,10 +145,24 @@ public abstract class LastFmEvaluation extends AbstractTestUserMetric {
                 golden.get(i).toArray(goldenDoubles);
 
                 if (goldenDoubles.length > 1) {
+
                     corA = p.correlation(ArrayUtils.toPrimitive(ADoubles), ArrayUtils.toPrimitive(goldenDoubles));
                     corB = p.correlation(ArrayUtils.toPrimitive(BDoubles), ArrayUtils.toPrimitive(goldenDoubles));
                     corC = p.correlation(ArrayUtils.toPrimitive(CDoubles), ArrayUtils.toPrimitive(goldenDoubles));
-                    
+
+                    if (Double.isNaN(corA)) {
+
+                        corA = 1;
+                    }
+                    if (Double.isNaN(corB)) {
+
+                        corB = 1;
+                    }
+                    if (Double.isNaN(corC)) {
+
+                        corC = 1;
+                    }
+
                     sumPearsonA += corA;
                     sumPearsonB += corB;
                     sumPearsonC += corC;
@@ -175,17 +181,26 @@ public abstract class LastFmEvaluation extends AbstractTestUserMetric {
 //                avgC = sumC / CDoubles.length;
 //                avgGolden = sumGolden / goldenDoubles.length;
 
-                    System.out.println(sumPearsonA);
-                    System.out.println(sumPearsonB);
-                    System.out.println(sumPearsonC);
-                    System.out.println(nusers);
-                    System.out.println("----------------------------------");
+//                    System.out.println(sumPearsonA);
+//                    System.out.println(sumPearsonB);
+//                    System.out.println(sumPearsonC);
+//                    System.out.println(nusers);
+//                    System.out.println("----------------------------------");
 //                sumGolden = 0; sumA = 0; sumB = 0; sumC = 0;
                 } else {
                     System.out.println("User has only ONE rating!!!!! ");
                     System.out.println("----------------------------------");
                 }
             }
+
+            avgA = sumPearsonA / nusers;
+            avgB = sumPearsonB / nusers;
+            avgC = sumPearsonC / nusers;
+
+            System.out.println(avgA);
+            System.out.println(avgB);
+            System.out.println(avgC);
+            System.out.println("----------------------------------");
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
